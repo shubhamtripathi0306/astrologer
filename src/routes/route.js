@@ -1,51 +1,52 @@
 const express = require('express')
 const router = express.Router()
+const {adminLogin,adminSignUp}= require("../controllers/adminController")
 const { createfeedback, updatefeedback, deleteFeedback}= require("../controllers/feedbackController")
-const { createUserInfo,updateUserInfo,deleteUser} = require("../controllers/userDetailsController")
-const{ sendOTP, verifyOTP, signUpUser,loginUser,logout }=  require("../controllers/userController")
+const { createastrologerInfo,updateAstrologerInfo, deleteAstrologer} = require("../controllers/astrologeController")
+const{ sendOTP, verifyOTP, signUpUser,loginUser,logout,update }=  require("../controllers/userController")
+const{createCart}= require("../controllers/cartController")
+const {createProduct}= require("../controllers/productController")
 const { authentication, authorisation } = require('../middleware/middleware')
 const multer = require("multer")
-const multerStorage  = multer.memoryStorage()
+const path = require("path");
 
-const multerfilter = (req,res,cb)=>{
-    if(file.mimetype.startWith("image")){
-        cb(null,true)
-    }else{
-        cb(new AppError("not an image"))
-    }
-}
 
-const upload = multer({
-    storage:multerStorage,
-    fileFilter:multerfilter
+var storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads");
+  },
+  filename: (req, file, cb) => {
+      console.log(file);
+    cb(null, path.extname(file.originalname) + "-" + Date.now());
+  },
 })
+var upload = multer({ storage: storage })
 
-uploadUserPhoto = upload.single("photo")
+
+router.post('/adminSignUp',adminSignUp)
+router.post('/adminLogin',adminLogin)
+
 
 router.post('/register', signUpUser);
 router.post("/send-otp",sendOTP)
 router.post("/verify-otp",verifyOTP)
 router.post("/loginUser",loginUser)
-router.get("/logoutUser",logout)
+router.get("/logoutUser", authorisation,logout)
+router.put("/updateUser", upload.single("image"),update)
 
 
-router.post('/createUser',createUserInfo)
-router.patch('/updateUser',updateUserInfo)
-router.delete('/deleteUser',deleteUser)
+router.post('/createAstro',createastrologerInfo)
+router.patch('/updateAstro',updateAstrologerInfo)
+router.delete('/deleteAstro',deleteAstrologer)
+
 
 router.post('/writeFeeds',createfeedback)
 router.put('/updateFeeds/:id',updatefeedback)
 router.delete('/deleteFeeds/:id',deleteFeedback)
 
+router.post('/createCart',authorisation,createCart)
 
-// router.post('/upload', uploadFile.single('image'), (req, res, next) => {
-//     try {
-//         return res.status(201).json({
-//             message: 'File uploded successfully'
-//         });
-//     } catch (error) {
-//         console.error(error);
-//     }
-// });
+router.post('/createProduct', createProduct)
+
 
 module.exports = router

@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
         unique: true
         },
 
-    weight: {
+    authorName: {
         type: String, 
         required: true
     },
@@ -17,7 +17,6 @@ const productSchema = new mongoose.Schema({
         type: Number, 
         required: true
     },
-
     rating: {
         type: Number,
         required: true
@@ -27,6 +26,10 @@ const productSchema = new mongoose.Schema({
         type: String, 
         required: true
     }, 
+    amazonLink:{
+        type:String,
+        required:true
+    },
     deletedAt: {type: Date, default:null},
 
     isDeleted: {type: Boolean, default: false}

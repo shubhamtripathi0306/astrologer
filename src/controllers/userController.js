@@ -6,12 +6,13 @@ var accountSid = "AC805d81df7192952bb208046a69510fdb";
 var authToken ="be12401fbc9809fb6884eb7be39391a1";
 // console.log(accountSid);
 var client = require("twilio")(accountSid, authToken);
-const { User} = require('../models/UserSignUpModel')
 const{Otp} = require('../models/otpModel');
 const UserSignUpModel = require("../models/UserSignUpModel");
 const jwt = require("jsonwebtoken")
 
-
+const isValidObjectId = (ObjectId) => {
+  return mongoose.Types.ObjectId.isValid(ObjectId)
+}
 
 exports.sendOTP = async (req, res) => {
   await client.verify
@@ -107,4 +108,26 @@ module.exports.logout = async (req, res, next) => {
     res.status(500).send(error);
   }
   next();
+}
+
+module.exports.update= async(req,res,next)=>{
+try {
+  const userId = req.query.userId
+      
+  const updateData = await UserSignUpModel.findById({ _id: userId })
+
+  if (!updateData) {
+      return res.status(404).send({ status: false, message: "No data found" })
+  }
+
+  const requestBody = req.body
+  if (Object.keys(req.body) == 0) {
+      return res.status(400).send({ status: false, message: 'please provide data for updation' })
+  }
+  const updateUser = await UserSignUpModel.findOneAndUpdate({ _id: userId }, { ...requestBody }, { new: true })
+  return res.status(200).send({ status: true, message: "details updated successfully", data: updateUser })
+
+} catch (error) {
+  res.status(500).send({ status: false, msg: error.message })
+}
 }

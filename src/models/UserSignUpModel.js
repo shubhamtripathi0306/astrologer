@@ -31,6 +31,12 @@ const userSchema = new mongoose.Schema(
     zodiacSign: {
       type: String,
     },
+    uploadImage:{
+      type:String,
+      required: false,
+      default:
+        "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
+    }
   },
   { timestamps: true }
 );
@@ -45,4 +51,4 @@ userSchema.methods.generateJWT = function(){
    return token
 
 }
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("UserSignUpModel", userSchema);

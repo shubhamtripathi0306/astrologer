@@ -35,5 +35,8 @@ return res.status(500).send({ status : false, error: err.msg })
 }
 }
 
+exports.restrictTo = ([...fields])=> {
+  async
+}
 
 module.exports = {authentication,authorisation}

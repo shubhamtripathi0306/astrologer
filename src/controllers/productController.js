@@ -1,5 +1,5 @@
 const productModel=  require("../models/productModel")
-const {isValid,isValidRequestBody} = require("../validator/validator")
+const {isValid,isValidRequestBody,isValidLink} = require("../validator/validator")
 
 
 exports.createProduct = async function(req,res) {
@@ -10,13 +10,13 @@ exports.createProduct = async function(req,res) {
             return res.status(400).send({ status: false, message: "Invalid request parameters. Please provide  details" })
         }
         
-        const {bookName, weight, price, rating, productImage} = body
+        const {bookName, authorName, price, rating, productImage,amazonLink} = body
 
         if(!isValid(bookName)) {
             return res.status(400).send({ status: false, msg: "bookName is required"})
         }
 
-        if(!isValid(weight)) {
+        if(!isValid(authorName)) {
             return res.status(400).send({ status: false, msg: "weight is required"})
         }
 
@@ -32,6 +32,10 @@ exports.createProduct = async function(req,res) {
             return res.status(400).send({ status: false, msg:  "upload the productImage"})
         }
 
+        if(!isValidLink(amazonLink)) {
+            return res.status(400).send({ status: false, msg:  "please provide the link here"})
+        }
+
 
         let duplicateTitle = await productModel.find({bookName:bookName})
         if(duplicateTitle.length != 0) {
@@ -43,7 +47,7 @@ exports.createProduct = async function(req,res) {
         let uploadedFileURL = await uploadFile( files[0] );
 
         const product = {
-            bookName, weight, price, rating, productImage, productImage: uploadedFileURL
+            bookName, authorName, price, rating, productImage, productImage: uploadedFileURL,amazonLink
         }
         let productData = await productModel.create(product)
         return res.status(201).send({status: true, msg:"Product created successfully", data: productData})
@@ -59,15 +63,35 @@ exports.createProduct = async function(req,res) {
     }
 }
 
-const deleteProduct =  async(req,res)=>{
-    try {
-        const productId = req.query.productId
-        if (!(/^[0-9a-fA-F]{24}$/.test(productId))) {
-            return res.status(400).send({ status: false, msg: 'please provide valid product Id' })
-          }
 
-          const productDetails = await productModel.findByIdAndRemove
-    } catch (error) {
-        res.status(500).send(error)
+exports.deleteCart = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        if (!validator.isValidobjectId(userId)) {
+            return res.status(400).send({ status: false, msg: "Invalid userId in params " });
+        }
+        const findUser = await userModel.findById({ _id: userId });
+        if (!findUser) {
+            return res.status(400).send({ status: false, msg: `User does not exits by ${userId}` });
+        }
+
+        const findCart = await cartModel.findOne({ userId: userId });
+        if (!findCart) {
+            return res.status(400).send({ status: false, msg: `Cart doesn't exits by ${userId}` });
+        }
+        const deleteCart = await cartModel.findOneAndUpdate({ userId: userId },
+            {
+                $set: {
+                    items: [],
+                    totalPrice: 0,
+                    totalItems: 0,
+                },
+            }, { new: true }).select({ items: 1, totalPrice: 1, totalItems: 1, _id: 0 });
+        return res.status(200).send({ status: true, msg: "Cart deleted successfully", data: deleteCart });
+
+    }
+    catch (err) {
+        return res.status(500).send({ status: false, msg: err.message});
     }
 }
+
