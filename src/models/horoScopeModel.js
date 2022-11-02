@@ -1,24 +1,43 @@
 const mongoose = require('mongoose');
 
 const horoscopeSchema = new mongoose.Schema({
+    astrologerName: {
+        type: String, 
+        required: true,
+        unique: true
+        },
 
-date: { type: String },
+        phoneNumber: {
+        type: String, 
+        required: true
+    },
 
-horoscope: { type: String },
+    password: {
+        type: Number, 
+        required: true
+    },
+    experience: {
+        type: Number,
+        required: true
+    },
 
-PROFESSION: { type: String },
-
-EMOTIONS: { type: String },
-
-HEALTH: { type: String },
-
-TRAVEL: { type: String },
-
-LOVE: { type: String },
-
-LUCK: { type: String },
-
-}, 
+    skills: {
+        type: String, 
+        required: true
+    }, 
+    astrologerImage:{
+        type:String,
+        required:true
+    },
+    aboutMe:{
+        type:String,
+        required:true
+    },
+    languages:{
+        type:String,
+        required:true
+    }
+},
 { timestamps: true });
 
 

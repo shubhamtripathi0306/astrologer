@@ -35,9 +35,9 @@ router.get("/logoutUser", authorisation,logout)
 router.put("/updateUser", upload.single("image"),update)
 
 
-router.post('/createAstro',createastrologerInfo)
-router.patch('/updateAstro',updateAstrologerInfo)
-router.delete('/deleteAstro',deleteAstrologer)
+router.post('/createAstro',upload.single("astrologerImage"),createastrologerInfo)
+router.patch('/updateAstro',authorisation,updateAstrologerInfo)
+router.delete('/deleteAstro',authorisation,deleteAstrologer)
 
 
 router.post('/writeFeeds',createfeedback)

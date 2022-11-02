@@ -3,7 +3,7 @@ const _ = require('lodash')
 const otpGenerator = require('otp-generator')
 require("dotenv").config({path : ".env"});
 var accountSid = "AC805d81df7192952bb208046a69510fdb"; 
-var authToken ="be12401fbc9809fb6884eb7be39391a1";
+var authToken ="ACb9abb068031a92f2fa41539fb434fd78";
 // console.log(accountSid);
 var client = require("twilio")(accountSid, authToken);
 const{Otp} = require('../models/otpModel');
