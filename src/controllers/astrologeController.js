@@ -27,8 +27,6 @@ exports.createastrologerInfo = async (req, res) => {
    
 
 
-
-
 exports.astrologerLogin = async function (req, res) {
   let data = req.body;
   let phoneNumber = data.phoneNumber;
