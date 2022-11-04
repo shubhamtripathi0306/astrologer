@@ -1,7 +1,7 @@
 const cartModel = require("../models/cartModel")
 const {isValidRequestBody,isValidObjectId} = require("../validator/validator")
 const productModel = require("../models/productModel");
-const UserSignUpModel = require("../models/UserSignUpModel")
+const UserSignUpModel = require("../models/userModel")
 
 
 exports.createCart = async(req,res)=>{

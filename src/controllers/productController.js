@@ -1,67 +1,47 @@
 const productModel=  require("../models/productModel")
 const {isValid,isValidRequestBody,isValidLink} = require("../validator/validator")
+const aws = require("aws-sdk")
+const imageModel  =  require("../models/imageModel")
+const multer = require("multer")
 
 
-exports.createProduct = async function(req,res) {
+
+// console.log(req.body.bookName);
+
+const Storage = multer.diskStorage({
+    destination:"upload",
+    filename:(req,file,cb)=>{
+        cb(null,file.originalname)
+    }
+})
+
+
+const upload = multer({
+    storage:Storage
+}).single('productImage')
+
+exports.createProduct = async function (req,res) {
     try {
-        const body = req.body
-
-        if (!isValidRequestBody(requestBody)) {
-            return res.status(400).send({ status: false, message: "Invalid request parameters. Please provide  details" })
-        }
+        const newImage = await productModel.create({
+                bookName : req.body.bookName,
+                authorName : req.body.authorName,
+                price : req.body.price,
+                rating : req.body.rating,
+                productImage :JM ,
+                amazonLink : req.body.amazonLink,
+              
+            })
+            newImage.save()
         
-        const {bookName, authorName, price, rating, productImage,amazonLink} = body
-
-        if(!isValid(bookName)) {
-            return res.status(400).send({ status: false, msg: "bookName is required"})
-        }
-
-        if(!isValid(authorName)) {
-            return res.status(400).send({ status: false, msg: "weight is required"})
-        }
-
-        if(!isValid(price)) {
-            return res.status(400).send({ status: false, msg: "price is required"})
-        }
-
-        if(!isValid(rating)) {
-            return res.status(400).send({ status: false, msg: "rating is required"})
-        }
-
-        if(!isValid(productImage)) {
-            return res.status(400).send({ status: false, msg:  "upload the productImage"})
-        }
-
-        if(!isValidLink(amazonLink)) {
-            return res.status(400).send({ status: false, msg:  "please provide the link here"})
-        }
-
-
-        let duplicateTitle = await productModel.find({bookName:bookName})
-        if(duplicateTitle.length != 0) {
-            return res.status(400).send({status: false, msg: "book name with this title  already exist"})
-        }
-
-        let files = req.files;
-        if (files && files.length > 0) {
-        let uploadedFileURL = await uploadFile( files[0] );
-
-        const product = {
-            bookName, authorName, price, rating, productImage, productImage: uploadedFileURL,amazonLink
-        }
-        let productData = await productModel.create(product)
         return res.status(201).send({status: true, msg:"Product created successfully", data: productData})
-        }
-        else{
-            return res.status(400).send({status: false, msg: "Product image is required"})
-        }
-
-    }
-    catch (err) {
-        console.log("This is the error :", err.msg)
-        res.status(500).send({ msg: "Error", error: err.msg })
-    }
+        
+    }  catch (err) {
+                console.log(err)
+                res.status(500).send({ msg: "Error", error: err.msg })
+            }  
 }
+
+
 
 
 exports.deleteCart = async (req, res) => {

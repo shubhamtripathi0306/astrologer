@@ -1,79 +1,109 @@
 const twillio = require("twilio")
-const _ = require('lodash')
+const jwt = require('jsonwebtoken')
+// const  {uploadFile} = require('../utils/aws')
+require('dotenv').config()
 const otpGenerator = require('otp-generator')
-require("dotenv").config({path : ".env"});
-var accountSid = "AC805d81df7192952bb208046a69510fdb"; 
-var authToken ="ACb9abb068031a92f2fa41539fb434fd78";
-// console.log(accountSid);
-var client = require("twilio")(accountSid, authToken);
-const{Otp} = require('../models/otpModel');
-const UserSignUpModel = require("../models/UserSignUpModel");
-const jwt = require("jsonwebtoken")
 
-const isValidObjectId = (ObjectId) => {
-  return mongoose.Types.ObjectId.isValid(ObjectId)
-}
+ let accountSid= process.env.TWILIO_ACCOUNT_SID
+let authToken= process.env.TWILIO_AUTH_TOKEN
+let twilioPhNo =process.env.PHONE_NO
 
-exports.sendOTP = async (req, res) => {
-  await client.verify
-    .services(verifySid)
-    .verifications.create({
-      to: `+91${req.body.phoneNumber}`,
-      channel: "sms",
-    })
-    .then((data) => {
-      res.status(200).send(data);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-};
+var client = new twillio(accountSid, authToken);
+
+const {Otp} = require('../models/Otp')
+const userModel = require('../models/userModel')
+const ImageModel  = require("../models/imageModel")
+exports.signup = async (req, res) => {
   
-exports.verifyOTP = async (req, res) => {
-  await client.verify
-    .services(verifySid)
-    .verificationChecks.create({
-      to: `+91${req.body.phoneNumber}`,
-      code: req.body.otp,
-    })
-    .then((data) => {
-      res.status(200).send({
-        status: data.status,
-      });
-      console.log("verified! 👍");
-    })
-    .catch((err) => {
-      res.status(404).send({
-        message: "Wrong OTP entered!",
-      });
-      console("wrong OTP !!");
-    });
-};
-
-
-
-module.exports.signUpUser = async (req, res, next) => {
-
   try {
-    const { phoneNumber,password, gender,profession,education,currentCity,homeCity,dateOfBirth,zodiacSign} = req.body;
+    const data = req.body
 
-    if (!phoneNumber||!password|| !profession || !education||!currentCity ||!homeCity ||!dateOfBirth ||!gender||!zodiacSign ) return res.status(400).json({ message: 'please provide the required fields' });
+    // const files = req.files;
+    // if (files.length == 0)
+    //   return res
+    //     .status(400)
+    //     .send({ status: false, message: `profileImage is Required` });
+      //  let profileImg = await uploadFile(files[0]);
+      //   data.profileImage = profileImg;
 
-    const existingUser = await UserSignUpModel.findOne({ phoneNumber: phoneNumber }).lean();
+    
 
-    if (existingUser)
-     return res.status(400).send({status:false,msg:"user already exist"})
+    let{phoneNumber} = data
 
-    const userCreated = await UserSignUpModel.create(req.body)
-    return res.status(201).json({ message: 'user created successfully' ,data:userCreated});
+    let user = await userModel.findOne({phoneNumber})
+    if(user)
+    return res.send({msg:'user exist please login'})
+
+    await userModel.create(data)
+
+
+const OTP = otpGenerator.generate(6,{  digits:true,upperCaseAlphabets:false,lowerCaseAlphabets:false,specialChars:false})
+
+// console.log(OTP);
+
+   let otpData ={
+    phoneNumber :phoneNumber,
+    otp:OTP
+   }
+
+   
+   await Otp.create(otpData)
+
+   client.messages.create({
+    from:twilioPhNo,
+    to:phoneNumber,
+    body:OTP
+})
+
+    
+
+  res.status(201).send({status:true,msg:"otp sent successfully"})
 
   } catch (error) {
-    return res.status(500).json({
-      errorName: error.name,
-      message: error.message
-    })
+    res.status(500).send({status:false,message:error});
   }
-};
+}
+
+
+
+exports.verifyNumber = async (req,res)=>{
+
+  try{
+
+    let phoneNumber = req.body.phoneNumber
+    let otp = req.body.otp
+
+
+    const otpHolder = await Otp.findOne({phoneNumber})
+      if(otpHolder.length === 0)
+      return res.status(400).send({message:'your otp has expired'})
+
+      let user = await userModel.findOne({phoneNumber})
+
+      let payload = {
+        number : phoneNumber,
+        _id: user._id 
+}
+
+
+      let token = jwt.sign(payload,'secret-key')
+  
+    if(phoneNumber == otpHolder.phoneNumber && otp == otpHolder.otp){
+
+      return res.status(200).send({
+        message:"user Registation Success",
+        token :token
+       
+      })
+
+    }else{
+      return res.status(400).send('Your OTp was wrong')
+  }
+  } catch (error) {
+    res.status(500).send(error.msg);
+  }
+}
+
 
 module.exports.loginUser = async (req, res, next) => {
   try{
@@ -81,13 +111,17 @@ module.exports.loginUser = async (req, res, next) => {
     let phoneNumber = data.phoneNumber;
     let password = data.password;
 
-    let result = await UserSignUpModel.findOne({ phoneNumber: phoneNumber, password: password })
-    if (!result) {
+    let user = await userModel.findOne({ phoneNumber: phoneNumber, password: password })
+    if (!user) {
         return res.status(404).send({ status: false, msg: "Invalid Credentials,please Check..!!" })
     }
-    // res.send(result)
-    let payload = { _id: result._id };
-    let token = jwt.sign(payload, "viper");
+   
+    let payload = {
+      number : phoneNumber,
+      _id: user._id 
+}
+
+    let token = jwt.sign(payload, "secret-key");
     res.setHeader("x-auth-token", token);
     res.send({ status: true, msg: "Successfully LoggedIn", tokenData: token })
 
@@ -114,20 +148,29 @@ module.exports.update= async(req,res,next)=>{
 try {
   const userId = req.query.userId
       
-  const updateData = await UserSignUpModel.findById({ _id: userId })
+  const files = req.files;
 
-  if (!updateData) {
-      return res.status(404).send({ status: false, message: "No data found" })
-  }
+  // let profileImg = await uploadFile(files[0]);
+  // data.profileImage = profileImg;
 
-  const requestBody = req.body
-  if (Object.keys(req.body) == 0) {
-      return res.status(400).send({ status: false, message: 'please provide data for updation' })
-  }
-  const updateUser = await UserSignUpModel.findOneAndUpdate({ _id: userId }, { ...requestBody }, { new: true })
+  // console.log(files);
+
+  // const updateData = await userModel.findById({ _id: userId })
+
+  // if (!updateData) {
+  //     return res.status(404).send({ status: false, message: "No data found" })
+  // }
+
+  // const requestBody = req.body
+  // if (Object.keys(req.body) == 0) {
+  //     return res.status(400).send({ status: false, message: 'please provide data for updation' })
+  // }
+
+  const updateUser = await userModel.findOneAndUpdate({ _id: userId }, { ...requestBody }, { new: true })
   return res.status(200).send({ status: true, message: "details updated successfully", data: updateUser })
 
 } catch (error) {
   res.status(500).send({ status: false, msg: error.message })
+  console.log(error)
 }
 }

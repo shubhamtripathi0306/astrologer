@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
-
+const url = require('mongoose-type-url')
 const productSchema = new mongoose.Schema({
 
     bookName: {
         type: String, 
         required: true,
-        unique: true
+ 
         },
 
     authorName: {
@@ -23,14 +23,13 @@ const productSchema = new mongoose.Schema({
     },
 
     productImage: {
-        type: String, 
-        required: true
+        type : String
     }, 
     amazonLink:{
         type:String,
         required:true
     },
-    deletedAt: {type: Date, default:null},
+    deletedAt: {type: Date, default:undefined },
 
     isDeleted: {type: Boolean, default: false}
 

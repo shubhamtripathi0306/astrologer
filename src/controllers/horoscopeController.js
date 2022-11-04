@@ -1,14 +1,14 @@
-const horoscope = require("../models/horoScopeModel")
+const horoScopeModel = require("../models/horoScopeModel")
 const {isValid,isValidRequestBody}=  require("../validator/validator")
 
-module.exports.addhoroscope = async(req,res)=>{
+exports.createHoroscope = async(req,res)=>{
     try {
-        const {date,horoScope,profession,emotion,health,travel,love,luck} = req.body;
-        if(!(date||horoScope||profession||emotion||health||travel||love||luck)){
-            res.status(400).sendStatus("Required filleds")
+        const {date,zodiac,profession,emotion,health,travel,love,luck} = req.body;
+        if(!(date||zodiac||profession||emotion||health||travel||love||luck)){
+            res.status(400).sendStatus("Required fields")
         } else{
             
-        let getDetails= await HoroSchema.create({date,horoScope,profession,emotion,health,travel,love,luck})
+        let getDetails= await horoScopeModel.create({date,zodiac,profession,emotion,health,travel,love,luck})
         res.status(200).json({
             message: "horoscope is Created successfully",
             getDetails,
@@ -20,28 +20,30 @@ module.exports.addhoroscope = async(req,res)=>{
     }
 }
 
-module.exports.updatehoroscope = async(req,res)=>{
-    const {date,horoScope,profession,emotion,health,travel,love,luck} = req.body;
+exports.updatehoroscope = async(req,res)=>{
+    const {date,zodiac,profession,emotion,health,travel,love,luck} = req.body;
     const id = req.params.id;
     try {
         // const date =new Date();
-        const data = await HoroSchema.findByIdAndUpdate(id ,{date,horoScope,profession,emotion,health,travel,love,luck})
-    res.status(200).json({ message: 'Udpate is successfully',data});
+        const data = await horoScopeModel.findByIdAndUpdate(id ,{date,zodiac,profession,emotion,health,travel,love,luck})
+    res.status(200).json({ message: 'Udpate is successfully',data:data});
         
     } catch (error) {
         console.log(error)
-    res.status(400).json("Error is occurred");
+    res.status(400).json("Error  occurred");
     }
 }
 
-
-module.exports.getDetails=async(req,res)=>{
+exports.getHoroscope = async function (req, res) {
     try {
-        const data =await HoroSchema.find();
-    console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-    res.status(200).json({ data: data });
+
+        const findData = await horoScopeModel.find(req.query)
+        if (findData.length === 0) {
+            return res.status(404).send({ status: false, msg: "no such role found" })
+        }
+        return res.status(200).send({ status: true, data: findData })
+
     } catch (error) {
-        console.log(error)
-    res.status(400).json("Error is occurred");
+        res.status(500).send({ status: true, message: error.message })
     }
 }

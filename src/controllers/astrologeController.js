@@ -4,26 +4,18 @@ const { isValid, isValidRequestBody } = require("../validator/validator");
 
 exports.createastrologerInfo = async (req, res) => {
   try {
-    // const requestBody = req.body;
-    // if (!isValidRequestBody(requestBody)) {
-    //   return res.status(400).send({
-    //     status: false,
-    //     message: "Invalid request parameters. Please provide  details",
-    //   });
-    // }
-  
     const { astrologerName, phoneNumber,password,experience,skills,aboutMe,astrologerImage,languages } = req.body
     const astrologerCreated = await astrologerModel.create({
       astrologerName, phoneNumber,password,experience,skills,aboutMe,astrologerImage,languages
-      }  );
+      });
        res
-         .status(201)
+  .status(201)
          .send({ status: true, message: "Success", data: astrologerCreated });
      } catch (error) {
        res.status(500).send(error);
        console.log(error)
      }
-   };
+   }
    
 
 
@@ -88,5 +80,5 @@ exports.deleteAstrologer = async (req, res) => {
     console.log(error);
     res.status(500).send({ status: false, msg: "server error" });
   }
-};
+}
 
