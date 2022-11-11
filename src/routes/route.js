@@ -6,26 +6,10 @@ const { createastrologerInfo,updateAstrologerInfo, deleteAstrologer} = require("
 const{createHoroscope,updatehoroscope,getHoroscope} = require("../controllers/horoscopeController")
 const{ signup,verifyNumber,loginUser,logout,update }=  require("../controllers/userController")
 const{createCart}= require("../controllers/cartController")
-const {createProduct}= require("../controllers/productController")
+ const {createProduct}= require("../controllers/productController")
 const { authentication, authorisation } = require('../middleware/middleware')
 const path = require("path");
 const multer = require("multer")
-
-
-// var storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "uploads");
-//   },
-//   filename: (req, file, cb) => {
-//       console.log(file);
-//     cb(null, path.extname(file.originalname) + "-" + Date.now());
-//   },
-// })
-// var upload = multer({ storage: storage })
-
-
-
-
 const ImageModel = require("../models/imageModel")
 
 const Storage = multer.diskStorage({

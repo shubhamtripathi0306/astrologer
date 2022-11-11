@@ -23,7 +23,9 @@ const productSchema = new mongoose.Schema({
     },
 
     productImage: {
-        type : String
+        data:Buffer,
+        contentType:String
+
     }, 
     amazonLink:{
         type:String,

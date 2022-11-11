@@ -21,19 +21,30 @@ const upload = multer({
 }).single('productImage')
 
 exports.createProduct = async function (req,res) {
+
+//  const productImage = {
+//     data:req.file.filename,
+//     contentType:'image/jpg'
+
+//     }
+
     try {
         const newImage = await productModel.create({
                 bookName : req.body.bookName,
                 authorName : req.body.authorName,
                 price : req.body.price,
                 rating : req.body.rating,
-                productImage :JM ,
+                productImage :{
+                    data:req.file.filename,
+                    contentType:'image/jpg'
+                
+                    },
                 amazonLink : req.body.amazonLink,
               
             })
-            newImage.save()
+            // newImage.save()
         
-        return res.status(201).send({status: true, msg:"Product created successfully", data: productData})
+        return res.status(201).send({status: true, msg:"Product created successfully", data: newImage})
         
     }  catch (err) {
                 console.log(err)
